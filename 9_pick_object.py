@@ -15,7 +15,7 @@ from pymycobot.mycobot import MyCobot
 # A. 파일 경로 및 설정
 DATA_DIR = "../data/Arm/masked_output" # stats.csv 경로를 포함
 STATS_PATH = os.path.join(DATA_DIR, "joint_stats.csv")
-MODEL_SAVE_PATH = "models/best_model.pth" 
+MODEL_SAVE_PATH = "models/checkpoint_epoch_15.pth" 
 CAMERA_INDEX = 0 # 로봇 팔에 연결된 카메라의 인덱스
 
 # B. ROI 및 HSV 설정 (학습 시와 동일하게)
@@ -23,7 +23,7 @@ CAMERA_INDEX = 0 # 로봇 팔에 연결된 카메라의 인덱스
 # **주의: 학습 시 사용된 정확한 HSV 범위를 적용해야 합니다.**
 # (제공된 전처리 코드는 V_LOW=0, V_HIGH=255를 사용했으므로 이 값으로 설정합니다.)
 H_LOW, S_LOW, V_LOW = 0, 0, 0
-H_HIGH, S_HIGH, V_HIGH = 179, 255, 255
+H_HIGH, S_HIGH, V_HIGH = 179, 255, 240
 HSV_LOW = np.array([H_LOW, S_LOW, V_LOW])
 HSV_HIGH = np.array([H_HIGH, S_HIGH, V_HIGH])
 
@@ -117,8 +117,15 @@ def main():
     # 1. 모델 로드 및 통계 로드
     try:
         model = JointPredictor(num_joints=NUM_JOINTS).to(DEVICE)
-        model.load_state_dict(torch.load(MODEL_SAVE_PATH, map_location=DEVICE))
+        state_dict = torch.load(MODEL_SAVE_PATH, map_location=DEVICE)
+        
+        new_state_dict = {}
+        for k, v in state_dict.items():
+            new_state_dict['resnet.' + k] = v 
+        
+        model.load_state_dict(new_state_dict) 
         model.eval()
+        
         print(f"✅ 모델 로드 성공: {MODEL_SAVE_PATH}")
     except FileNotFoundError:
         print(f"❌ 오류: 모델 파일 또는 통계 파일을 찾을 수 없습니다. 학습을 먼저 수행하세요.")
@@ -152,6 +159,7 @@ def main():
     
     # 전처리 이미지 표시 토글 상태
     show_processed_image = False 
+    processed_window_open = False
 
     print("\n--- 🧠 MyCobot 실시간 추론 도구 ---")
     print("   [i] : 현재 프레임으로 Joint Angle 추론 및 로봇 이동")
@@ -176,8 +184,12 @@ def main():
             if show_processed_image:
                 cv2.putText(processed_image, "Processed (p:toggle)", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                 cv2.imshow('Processed Image (Model Input)', processed_image)
-            elif 'Processed Image (Model Input)' in cv2.getWindowNames():
-                 cv2.destroyWindow('Processed Image (Model Input)')
+                processed_window_open = True # 윈도우가 열림
+                
+            # 📌 수정된 로직: 윈도우가 열려있는데 (processed_window_open=True) 표시가 꺼졌을 때 (show_processed_image=False) 닫는다.
+            elif processed_window_open: 
+                cv2.destroyWindow('Processed Image (Model Input)')
+                processed_window_open = False # 윈도우 닫힘 상태로 변경
 
             # 4. 실시간 카메라 프레임 표시
             cv2.imshow('MyCobot Live Camera & Inference Tool', frame)

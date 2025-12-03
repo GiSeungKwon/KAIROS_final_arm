@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore")
 # ----------------------------------------------------
 # 데이터 경로 설정
 DATA_DIR = "../data/Arm/masked_output"
-CSV_FILE = os.path.join(DATA_DIR, "joint_labels.csv")
+CSV_FILE = os.path.join(DATA_DIR, "masked_joint_labels.csv")
 # Min/Max 통계 파일 경로 설정 (새로 추가)
 STATS_PATH = os.path.join(DATA_DIR, "joint_stats.csv")
 
