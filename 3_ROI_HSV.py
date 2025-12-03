@@ -7,7 +7,7 @@ import sys
 # 1. 설정 변수 (Configuration)
 # ----------------------------------------------------
 # 데이터 경로 및 ROI 설정
-DATA_DIR = "./mycobot_labeling_data"
+DATA_DIR = "../data/arm/mycobot_labeling_data"
 ROI_START = (30, 30) # (x_min, y_min)
 ROI_END = (430, 430) # (x_max, y_max)
 OUTPUT_DIR = os.path.join(DATA_DIR, "masked_output") # 전처리된 이미지 저장 폴더
@@ -33,10 +33,10 @@ def nothing(x):
 
 def apply_roi_and_hsv_masking(image, hsv_low, hsv_high):
     """
-    1. 원본 이미지에 ROI 마스크를 적용합니다 (ROI 외부를 검은색으로).
+    1. 원본 이미지에 ROI 마스크를 적용합니다 (ROI 외부를 흰색으로).
     2. ROI 영역 내에서 HSV 마스킹을 적용하여 물체를 분리합니다.
     """
-    # 1. ROI 적용: ROI 외부를 검은색으로 만들 마스크 생성
+    # 1. ROI 적용: ROI 외부를 흰색으로 만들 마스크 생성
     # mask_roi = np.zeros_like(image)
     mask_roi = np.ones_like(image)
     
