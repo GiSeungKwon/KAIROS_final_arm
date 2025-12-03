@@ -37,14 +37,8 @@ CHECKPOINT_INTERVAL = 5 # 5 epoch마다 모델 저장
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"✅ 사용 장치: {DEVICE}")
 
-# myCobot 320 관절 제한 (Normalization을 위한 Min/Max) - 삭제 예정
-# JOINT_MIN = np.array([-165.0, -165.0, -165.0, -165.0, -165.0, -175.0])
-# JOINT_MAX = np.array([ 165.0,  165.0,  165.0,  165.0,  165.0,  175.0])
-# JOINT_RANGE = JOINT_MAX - JOINT_MIN
-
-
 # ----------------------------------------------------
-# A. 데이터셋 통계 생성 함수 (새로 추가)
+# A. 데이터셋 통계 생성 함수
 # ----------------------------------------------------
 def create_joint_stats(csv_path, stats_path, label_cols=['J1', 'J2', 'J3', 'J4', 'J5', 'J6']):
     """
