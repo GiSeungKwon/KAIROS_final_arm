@@ -24,7 +24,7 @@ CSV_FILE = os.path.join(DATA_DIR, "masked_joint_labels.csv")
 STATS_PATH = os.path.join(DATA_DIR, "joint_stats.csv")
 
 # 학습 설정
-EPOCHS = 20
+EPOCHS = 50
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-4
 
