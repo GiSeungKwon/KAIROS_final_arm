@@ -17,10 +17,13 @@ BAUD = 115200
 mc = None
 
 # --- OPC UA 수신 설정 ---
-OPCUA_READ_URL = "opc.tcp://172.30.1.56:0630/freeopcua/server/" # 수신 서버 주소
-
 # --- OPC UA 송신 설정 (별도의 서버/노드 ID 사용) ---
-OPCUA_WRITE_URL = "opc.tcp://172.30.1.56:0630/freeopcua/server/" # 송신 서버 주소
+OPCUA_READ_URL = "opc.tcp://172.30.1.61:0630/freeopcua/server/" # 수신 서버 주소
+OPCUA_WRITE_URL = "opc.tcp://172.30.1.61:0630/freeopcua/server/" # 송신 서버 주소
+
+# OPCUA_READ_URL = "opc.tcp://172.30.1.56:0630/freeopcua/server/" # 수신 서버 주소
+# OPCUA_WRITE_URL = "opc.tcp://172.30.1.56:0630/freeopcua/server/" # 송신 서버 주소
+
 OBJECT_NODE_ID = "ns=2;i=3"
 METHOD_NODE_ID = "ns=2;i=25"
 

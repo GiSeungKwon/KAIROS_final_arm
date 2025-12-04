@@ -8,7 +8,8 @@ logger = logging.getLogger(__name__)
 
 # --- OPC UA 송신 설정 ---
 # ⚠️ 주소 및 노드 ID는 수신 코드와 다르므로 주의하세요.
-OPC_ENDPOINT = "opc.tcp://172.30.1.56:0630/freeopcua/server/"
+OPC_ENDPOINT = "opc.tcp://172.30.1.61:0630/freeopcua/server/"
+# OPC_ENDPOINT = "opc.tcp://172.30.1.56:0630/freeopcua/server/"
 OBJECT_NODE_ID = "ns=2;i=3"
 METHOD_NODE_ID = "ns=2;i=25"
 
