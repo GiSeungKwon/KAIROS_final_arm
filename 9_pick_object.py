@@ -15,7 +15,7 @@ from pymycobot.mycobot import MyCobot
 # A. 파일 경로 및 설정
 DATA_DIR = "../data/Arm/masked_output" # stats.csv 경로를 포함
 STATS_PATH = os.path.join(DATA_DIR, "joint_stats.csv")
-MODEL_SAVE_PATH = "models/checkpoint_epoch_15.pth" 
+MODEL_SAVE_PATH = "models/1/checkpoint_epoch_15.pth" 
 CAMERA_INDEX = 0 # 로봇 팔에 연결된 카메라의 인덱스
 
 # B. ROI 및 HSV 설정 (학습 시와 동일하게)
