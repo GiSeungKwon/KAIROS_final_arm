@@ -2,7 +2,9 @@ import asyncio
 import json
 import time
 from asyncua import Client, ua
+# MyCobot 대신 MyCobot320을 사용할 수 있도록 수정
 from pymycobot.mycobot import MyCobot
+from pymycobot import MyCobot320 
 import logging
 
 # 로깅 설정 (옵션)
@@ -14,10 +16,10 @@ PORT = "COM3"
 BAUD = 115200
 
 # MyCobot 객체는 전역으로 선언하여 OPC UA 핸들러와 메인 함수에서 접근합니다.
+# MyCobot320 객체를 사용하므로, mc는 MyCobot320 인스턴스가 됩니다.
 mc = None
 
-# --- OPC UA 수신 설정 ---
-# --- OPC UA 송신 설정 (별도의 서버/노드 ID 사용) ---
+# --- OPC UA 수신/송신 설정 (주소는 원본 코드를 유지) ---
 OPCUA_READ_URL = "opc.tcp://172.30.1.61:0630/freeopcua/server/" # 수신 서버 주소
 OPCUA_WRITE_URL = "opc.tcp://172.30.1.61:0630/freeopcua/server/" # 송신 서버 주소
 
@@ -52,8 +54,8 @@ async def send_mission_state(status: str):
                 method_node.nodeid,
                 json_str
             )
-            print("  - ResultCode   :", result_code)
-            print("  - ResultMessage:", result_message)
+            print("  - ResultCode   :", result_code)
+            print("  - ResultMessage:", result_message)
             logger.info("OPC UA 송신 완료.")
 
     except Exception as e:
@@ -75,8 +77,6 @@ class SubHandler:
         데이터 변경 알림 시 호출되는 비동기적 콜백 함수
         """
         # 비동기 함수인 execute_command_and_respond를 별도의 태스크로 실행
-        # datachange_notification은 비동기 컨텍스트(async with Client) 내에서 실행되므로
-        # asyncio.create_task를 사용할 수 있습니다.
         asyncio.create_task(self.execute_command_and_respond(val))
 
     async def execute_command_and_respond(self, val):
@@ -103,40 +103,44 @@ class SubHandler:
 
         # 3. MyCobot 동작 수행 및 응답
         if command and self.mc is not None:
+            # MyCobot320을 사용하더라도 pymycobot API는 대부분 동일하게 동작합니다.
             if command == "go_home":
                 logger.info("-> MyCobot: go_home 명령 수행 (로봇 홈 위치로 이동)")
                 self.mc.send_angles([0, 0, 90, 0, -90, -90], 50)
-                # go_home은 상태 변경을 알릴 필요가 없다면 응답 생략
             
             elif command == "mission_start":
                 logger.info("-> MyCobot: mission_start 명령 수행 (미션 시작 위치/동작)")
                 
-                mc.set_gripper_value(80, 30)
+                # --- 미션 시작 동작 ---
+                mc.set_gripper_value(80, 50)
                 time.sleep(3)
-                self.mc.send_angles([0, 0, 0, 0, 0, 0], 30)
+                self.mc.send_angles([0, 0, 0, 0, 0, 0], 50)
                 time.sleep(3)
                 # go home
-                self.mc.send_angles([-17.2, 30.49, 4.48, 53.08, -90.87, -85.86], 30)
+                self.mc.send_angles([-17.2, 30.49, 4.48, 53.08, -90.87, -85.86], 50)
                 time.sleep(3)
                 # pick
-                self.mc.send_angles([-12.04, 18.36, 98.87, -21.35, -92.37, -101.95], 30)
+                self.mc.send_angles([-27.15, 7.55, 118.56, -31.72, -84.99, -119.35], 50)
                 time.sleep(3)
-                mc.set_gripper_value(25, 30)
+                mc.set_gripper_value(25, 50)
                 time.sleep(3)
-                self.mc.send_angles([0, 0, 0, 0, 0, 0], 30)
+                self.mc.send_angles([-17.2, 30.49, 4.48, 53.08, -90.87, -85.86], 50)
+                time.sleep(3)
+                self.mc.send_angles([25.2, 30.49, 4.48, 53.08, -90.87, -85.86], 50)
                 time.sleep(3)
                 # place
-                self.mc.send_angles([27.59, 21.79, 68.11, -0.7, -80.41, -65.56], 30)
+                self.mc.send_angles([30, 21.79, 68.11, -0.7, -80.41, -65.56], 50)
                 time.sleep(3)
-                mc.set_gripper_value(80, 30)
+                mc.set_gripper_value(80, 50)
                 time.sleep(3)
-                self.mc.send_angles([-17.2, 30.49, 4.48, 53.08, -90.87, -85.86], 30)
+                self.mc.send_angles([-17.2, 30.49, 4.48, 53.08, -90.87, -85.86], 50)
                 time.sleep(3)
-                self.mc.send_angles([0, 0, 0, 0, 0, 0], 30)
+                self.mc.send_angles([0, 0, 0, 0, 0, 0], 50)
                 time.sleep(3)
+                # --- 미션 종료 ---
                 
-                # 동작이 완료될 때까지 대기 (필요에 따라 sleep 추가)
-                await asyncio.sleep(5) # 예시로 2초 대기
+                # 동작 완료 대기 후 응답
+                await asyncio.sleep(5) 
                 
                 logger.info("-> MyCobot: mission_start 동작 완료. OPC UA 응답 송신 시작.")
                 # 4. OPC UA 송신 태스크 호출 (arm_mission_success)
@@ -157,16 +161,29 @@ async def amr_subscriber():
 
     # MyCobot 연결 초기화
     try:
-        mc = MyCobot(PORT, BAUD)
+        # MyCobot320 객체 생성
+        mc = MyCobot320(PORT, BAUD)
         mc.set_color(0, 0, 255) 
-        logger.info(f"MyCobot이 {PORT}에 {BAUD} 속도로 성공적으로 연결되었습니다.")
+        logger.info(f"MyCobot320이 {PORT}에 {BAUD} 속도로 성공적으로 연결되었습니다.")
+        
+        # --- 추가된 그리퍼 초기화 로직 ---
+        logger.info("-> MyCobot320: 전기 그리퍼 초기화 시작")
+        mc.set_gripper_mode(0)          # 0: 전동 그리퍼 모드 설정
+        mc.init_electric_gripper()      # 그리퍼 초기화
+        time.sleep(2)
+        mc.set_electric_gripper(0)      # 그리퍼 열림
+        # 그리퍼 위치 설정 (value: 55, speed: 20, set_flag: 1)
+        mc.set_gripper_value(55, 20, 1) 
+        time.sleep(2)
+        logger.info("-> MyCobot320: 전기 그리퍼 초기화 완료 (55 위치로 이동).")
+        # --------------------------------
+        
     except Exception as e:
-        logger.error(f"MyCobot 연결 실패: {e}")
+        logger.error(f"MyCobot320 연결 또는 초기화 실패: {e}")
         mc = None
 
     if mc is None:
         logger.error("MyCobot 연결 문제로 OPC UA 구독을 시작할 수 없습니다. OPC UA 통신만 진행합니다.")
-        # return # 로봇 연결 실패해도 OPC UA 통신 자체는 유지하려면 주석 처리
 
     logger.info(f"OPC UA 수신 서버에 연결 시도: {OPCUA_READ_URL}")
     try:
@@ -176,6 +193,7 @@ async def amr_subscriber():
             handler = SubHandler(mc)
             sub = await client.create_subscription(100, handler)
             
+            # 구독할 노드 경로
             node_path = [
                 "0:Objects",
                 "2:ARM",

@@ -23,10 +23,11 @@ SEQUENTIAL_MOVE_DELAY = 1 # 이동 간 대기 시간
 
 GRIPPER_ACTION_DELAY = 1 # 그리퍼 작동 후 대기 시간
 
-CONVEYOR_CAPTURE_POSE = [0, 0, 90, 0, -90, -90] # 컨베이어벨트 캡처 자세
-ROBOTARM_CAPTURE_POSE = [0, 0, 90, 0, -90, 90] # 로봇 팔 위 캡처 자세
+CONVEYOR_CAPTURE_POSE = [0, 0, 50, 40, -90, -90] # 컨베이어벨트 캡처 자세
+ROBOTARM_CAPTURE_POSE = [0, 0, 50, 40, -90, 90] # 로봇 팔 위 캡처 자세
 
-TEST_PICK_POSE = [-27.15, 7.55, 118.56, -31.72, -84.99, -119.35] # 테스트 픽 자세
+TEST_PICK_POSE = [-90, 30, 90, -30, -90, -90] # 테스트 픽 자세
+TMP_PICK_POSE = [-90, 20, 90, -20, -90, -90] # 테스트 tmp 픽 자세
 TEST_PLACE_POSE = [30, 21.79, 68.11, -0.7, -80.41, -65.56] # 테스트 플레이스 자세
 
 INTERMEDIATE_POSE_ANGLES = [-17.2, 30.49, 4.48, 53.08, -90.87, -85.86] # 충돌 방지 경유 자세
@@ -225,19 +226,21 @@ def main():
 
         # [5]: TEST_PICK_POSE로 이동 (경유지 포함)
         elif key == ord('5'):
-            print(f"\n🏠 CONVEYOR_CAPTURE_POSE 이동 시작: 경유지 경유 후 최종지 {CONVEYOR_CAPTURE_POSE}로 이동합니다.")
+            print(f"\n🏠 TEST_PICK_POSE 이동 시작: 경유지 경유 후 최종지 {TEST_PICK_POSE}로 이동합니다.")
             
             mc.set_gripper_value(GRIPPER_OPEN_VALUE, GRIPPER_SPEED)
             mc.send_angles(INTERMEDIATE_POSE_ANGLES, MOVEMENT_SPEED)
             time.sleep(SEQUENTIAL_MOVE_DELAY)
-            
+
+            mc.send_angles(TMP_PICK_POSE, MOVEMENT_SPEED)
+            time.sleep(SEQUENTIAL_MOVE_DELAY)
+
             mc.send_angles(TEST_PICK_POSE, MOVEMENT_SPEED)
-            time.sleep(5)
-            print("✅ TEST_PICK_POSE 이동 완료.")
+            time.sleep(SEQUENTIAL_MOVE_DELAY)
         
         # [6]: TEST_PLACE_POSE로 이동 (경유지 포함)
         elif key == ord('6'):
-            print(f"\n🏠 CONVEYOR_CAPTURE_POSE 이동 시작: 경유지 경유 후 최종지 {CONVEYOR_CAPTURE_POSE}로 이동합니다.")
+            print(f"\n🏠 TEST_PLACE_POSE 이동 시작: 경유지 경유 후 최종지 {TEST_PLACE_POSE}로 이동합니다.")
             
             mc.send_angles(INTERMEDIATE_POSE_ANGLES, MOVEMENT_SPEED)
             time.sleep(SEQUENTIAL_MOVE_DELAY)
